@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lokalavdelningar – Svenska Kyrkans Unga</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <h1>Hitta lokalavdelning</h1>
+      <p>Sök eller filtrera bland alla lokalavdelningar.</p>
+    </header>
+
+    <section class="controls" aria-label="Sök och filter">
+      <!-- SÖK -->
+      <div class="control-group">
+        <label for="searchInput">Sök på namn, stift eller nummer</label>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Börja skriva t.ex. 'Lund', 'Göteborgs stift' eller '123'..."
+        />
+      </div>
+      <a href="https://svenskakyrkansunga.se/123">temp</a>
+
+      <!-- FILTER STIFT -->
+      <div class="control-group">
+        <label for="districtFilter">Filtrera på stift</label>
+        <select id="districtFilter">
+          <option value="">Alla stift</option>
+          <option value="Uppsala stift">Uppsala stift</option>
+          <option value="Linköpings stift">Linköpings stift</option>
+          <option value="Skara stift">Skara stift</option>
+          <option value="Strängnäs stift">Strängnäs stift</option>
+          <option value="Västerås stift">Västerås stift</option>
+          <option value="Växjö stift">Växjö stift</option>
+          <option value="Lunds stift">Lunds stift</option>
+          <option value="Göteborgs stift">Göteborgs stift</option>
+          <option value="Karlstads stift">Karlstads stift</option>
+          <option value="Härnösands stift">Härnösands stift</option>
+          <option value="Luleå stift">Luleå stift</option>
+          <option value="Visby stift">Visby stift</option>
+          <option value="Stockholms stift">Stockholms stift</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="status-bar">
+      <span id="resultsInfo">Laddar lokalavdelningar...</span>
+    </section>
+
+    <section
+      id="chaptersList"
+      class="chapters-list"
+      aria-live="polite"
+      aria-label="Lista över lokalavdelningar"
+    >
+      <div class="empty-message">
+        Lokalavdelningarna laddas in från Excel-filen.
+      </div>
+    </section>
+
+    <nav
+      id="pagination"
+      class="pagination"
+      aria-label="Sidindelning"
+    >
+      <!-- Paginering fylls på via JavaScript -->
+    </nav>
+  </main>
+
+  <!-- Bibliotek för att läsa Excel-filer -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
