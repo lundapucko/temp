@@ -1,12 +1,17 @@
 // app.js
 
-const PAGE_SIZE = 10;
-const SHAREPOINT_EXCEL_URL = "lokalavdelningar.xlsx"
+const PAGE_SIZE = 5;
 
+// Google Sheets → export som xlsx (den här kom vi fram till tidigare)
+const GOOGLE_SHEETS_XLSX_URL =
+  "https://docs.google.com/spreadsheets/d/1agRPuy9kIeM2kGPzJm7QnL3Uf4GJAwRV/export?format=xlsx&gid=843310089";
 
 let allChapters = [];
 let filteredChapters = [];
 let currentPage = 1;
+
+// Flagga för om vi visar "närmast"-ruta för postnummer
+let nearestPostcodeMode = false;
 
 // DOM-element
 const searchMainInput = document.getElementById("searchMainInput");
@@ -17,15 +22,15 @@ const pagination = document.getElementById("pagination");
 const resultsInfo = document.getElementById("resultsInfo");
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Läs Excel-filen från repo (justera namn/sökväg vid behov)
-  loadChaptersFromExcel(SHAREPOINT_EXCEL_URL);
+  // Läs Excel-data från Google Sheets
+  loadChaptersFromExcel(GOOGLE_SHEETS_XLSX_URL);
 
   searchMainInput.addEventListener("input", handleFiltersChange);
   searchLocationInput.addEventListener("input", handleFiltersChange);
   districtFilter.addEventListener("change", handleFiltersChange);
 });
 
-// --- Läs Excel-fil från server/repo --- //
+// --- Läs Excel-fil från server/Sheets --- //
 async function loadChaptersFromExcel(path) {
   try {
     const response = await fetch(path);
@@ -125,24 +130,25 @@ async function loadChaptersFromExcel(path) {
   }
 }
 
-// --- Filter (två sökfält + stiftfilter) --- //
+// --- Filter (två sökfält + stiftfilter + postnummerlogik) --- //
 function handleFiltersChange() {
   if (!allChapters || allChapters.length === 0) {
     return;
   }
 
-  const mainQuery = searchMainInput.value.trim().toLowerCase();
-  const locationQuery = searchLocationInput.value.trim().toLowerCase();
+  nearestPostcodeMode = false; // återställ varje gång
+
+  const mainQuery = (searchMainInput.value || "").trim().toLowerCase();
+  const locationQueryRaw = (searchLocationInput.value || "").trim().toLowerCase();
   const selectedDistrict = districtFilter.value;
 
-  filteredChapters = allChapters.filter((chapter) => {
+  // 1) Filtrera först på huvudfält + stift
+  const baseSet = allChapters.filter((chapter) => {
     const name = (chapter.namn || "").toLowerCase();
     const shortname = (chapter.kortnamn || "").toLowerCase();
     const number = String(chapter.nummer || "").toLowerCase();
     const parish = (chapter.forsamling || "").toLowerCase();
-    const postcode = String(chapter.postnummer || "").toLowerCase();
-    const city = (chapter.ort || "").toLowerCase();
-    const district = (chapter.distrikt || "").toLowerCase();
+    const district = chapter.distrikt || "";
 
     // Sökfält 1: namn, kortnamn, nummer, församling/pastorat
     const matchesMain =
@@ -152,20 +158,103 @@ function handleFiltersChange() {
       number.includes(mainQuery) ||
       parish.includes(mainQuery);
 
-    // Sökfält 2: ort, postnummer
-    const matchesLocation =
-      locationQuery === "" ||
-      postcode.includes(locationQuery) ||
-      city.includes(locationQuery);
-
     // Stift enbart via filter (inte sök)
     const matchesDistrict =
-      !selectedDistrict || chapter.distrikt === selectedDistrict;
+      !selectedDistrict || district === selectedDistrict;
 
-    // Båda sökfält gäller samtidigt (AND)
-    return matchesMain && matchesLocation && matchesDistrict;
+    return matchesMain && matchesDistrict;
   });
 
+  // 2) Om inget står i ort/postnummer-fältet → bara baseSet
+  if (!locationQueryRaw) {
+    filteredChapters = baseSet;
+    currentPage = 1;
+    render();
+    return;
+  }
+
+  // 3) Finns det några siffror? → postnummerläge
+  const locationDigits = locationQueryRaw.replace(/\D/g, ""); // plocka ut bara siffror
+
+  let finalSet = [];
+
+  if (locationDigits.length > 0) {
+    // --- POSTNUMMERLOGIK ---
+
+    // Hjälpfunktion: hämta bara siffror från ett kapitelpostnummer
+    const getPostcodeDigits = (chapter) =>
+      String(chapter.postnummer || "").replace(/\D/g, "");
+
+    // 3a) EXAKT PREFIX-TRÄFF (högst prioritet)
+    const exactMatches = baseSet.filter((chapter) => {
+      const pc = getPostcodeDigits(chapter);
+      return pc.startsWith(locationDigits);
+    });
+
+    if (exactMatches.length > 0) {
+      finalSet = exactMatches;
+      nearestPostcodeMode = false; // inga "närmast"-tips
+    } else if (locationDigits.length >= 2) {
+      // 3b) INGEN EXAKT → använd 2 första siffrorna som region
+      const region = locationDigits.slice(0, 2);
+
+      const regionMatches = baseSet.filter((chapter) => {
+        const pc = getPostcodeDigits(chapter);
+        return pc.startsWith(region);
+      });
+
+      if (regionMatches.length > 0) {
+        finalSet = regionMatches;
+        nearestPostcodeMode = true;
+      } else {
+        // 3c) INGA MED SAMMA REGION → testa region -1 och region +1
+        const regionNum = parseInt(region, 10);
+        const neighborRegions = [];
+
+        if (!Number.isNaN(regionNum)) {
+          if (regionNum - 1 >= 0) {
+            neighborRegions.push(String(regionNum - 1).padStart(2, "0"));
+          }
+          if (regionNum + 1 <= 99) {
+            neighborRegions.push(String(regionNum + 1).padStart(2, "0"));
+          }
+        }
+
+        const neighborMatches = baseSet.filter((chapter) => {
+          const pc = getPostcodeDigits(chapter);
+          return neighborRegions.some((reg) => pc.startsWith(reg));
+        });
+
+        if (neighborMatches.length > 0) {
+          finalSet = neighborMatches;
+          nearestPostcodeMode = true;
+        } else {
+          // Inga kandidater alls för postnummerlogiken
+          finalSet = [];
+          nearestPostcodeMode = false;
+        }
+      }
+    } else {
+      // Mindre än 2 siffror → för otydligt för regionlogik,
+      // använd vanlig "innehåller" på postnummer + ort
+      finalSet = baseSet.filter((chapter) => {
+        const pc = String(chapter.postnummer || "").toLowerCase();
+        const city = (chapter.ort || "").toLowerCase();
+        return pc.includes(locationQueryRaw) || city.includes(locationQueryRaw);
+      });
+      nearestPostcodeMode = false;
+    }
+  } else {
+    // --- INGEN SIFFRA → vanlig text-sökning på ort/postnummer ---
+    finalSet = baseSet.filter((chapter) => {
+      const pc = String(chapter.postnummer || "").toLowerCase();
+      const city = (chapter.ort || "").toLowerCase();
+      return pc.includes(locationQueryRaw) || city.includes(locationQueryRaw);
+    });
+    nearestPostcodeMode = false;
+  }
+
+  filteredChapters = finalSet;
   currentPage = 1;
   render();
 }
@@ -184,6 +273,15 @@ function renderList() {
     chaptersList.innerHTML =
       '<div class="empty-message">Inga lokalavdelningar matchar din sökning eller filter.</div>';
     return;
+  }
+
+  // Om vi är i "närmast"-läge för postnummer, visa en ruta överst
+  if (nearestPostcodeMode) {
+    const infoBox = document.createElement("div");
+    infoBox.className = "empty-message";
+    infoBox.textContent =
+      "Det finns ingen lokalavdelningen på det postnumret. Dessa lokalavdelningar ligger närmast.";
+    chaptersList.appendChild(infoBox);
   }
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
