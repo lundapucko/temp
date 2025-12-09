@@ -1,123 +1,180 @@
-*,
-*::before,
-*::after {
+/* All styling är scoped till komponenten via .chapters-container
+   så den krockar minimalt med övrig webb. */
+
+.chapters-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  font-family: "PT Sans", "Open Sans", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #222222;
+  background-color: #ffffff;
+}
+
+.chapters-container *,
+.chapters-container *::before,
+.chapters-container *::after {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background-color: #f5f5f7;
-  color: #222;
+/* ===== Header ===== */
+
+.page-header {
+  margin-bottom: 1.5rem;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-.page-header h1 {
+.page-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  color: #cc0000;
   margin: 0 0 0.25rem;
-  font-size: 1.8rem;
+  font-weight: 700;
 }
 
-.page-header p {
-  margin: 0 0 1.5rem;
-  color: #555;
+.page-title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.7rem, 3vw, 2rem);
+  font-weight: 700;
 }
 
-.controls {
+.page-intro {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #444444;
+}
+
+/* ===== Filterpanel ===== */
+
+.filter-panel {
+  margin-top: 1.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.25rem 1.1rem;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+}
+
+.filters {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1rem;
   align-items: flex-end;
 }
 
-.control-group {
+.filter-group {
   display: flex;
   flex-direction: column;
-  flex: 1 1 240px;
+  gap: 0.3rem;
 }
 
-label {
-  font-size: 0.9rem;
-  margin-bottom: 0.25rem;
-  color: #333;
+.filter-group--wide {
+  flex: 1 1 260px;
 }
 
-input[type="text"],
-select {
+.filter-group--narrow {
+  flex: 0 0 210px;
+}
+
+.chapters-container label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333333;
+}
+
+.chapters-container input[type="text"],
+.chapters-container select {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid #ccc;
+  border: 1px solid #d0d0d0;
   font-size: 0.95rem;
-  background-color: #fff;
+  background-color: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
 }
 
-input[type="text"]:focus,
-select:focus {
-  outline: 2px solid #0057b7;
-  outline-offset: 1px;
-  border-color: #0057b7;
+.chapters-container input[type="text"]::placeholder {
+  color: #999999;
 }
+
+.chapters-container input[type="text"]:focus,
+.chapters-container select:focus {
+  outline: none;
+  border-color: #cc0000;
+  box-shadow: 0 0 0 2px rgba(204, 0, 0, 0.15);
+  background-color: #ffffff;
+}
+
+.filter-helptext {
+  margin: 0.7rem 0 0;
+  font-size: 0.8rem;
+  color: #666666;
+}
+
+/* ===== Statusrad ===== */
 
 .status-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
-  color: #555;
+  color: #555555;
 }
+
+/* ===== Lista med lokalavdelningar ===== */
 
 .chapters-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .chapter-card {
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 10px;
-  padding: 0.85rem 1rem;
-  border: 1px solid #e0e0e0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e3e3e3;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .chapter-header {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0.5rem;
-}
-
-.chapter-name {
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.chapter-shortname {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.chapter-meta {
-  font-size: 0.9rem;
-  color: #444;
-  display: flex;
-  flex-wrap: wrap;
   gap: 0.75rem;
 }
 
+.chapter-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* metadata-rad: stift, församling, ort/postnummer */
+
+.chapter-meta {
+  font-size: 0.9rem;
+  color: #444444;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
 .chapter-meta span {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background-color: #f2f2f2;
   white-space: nowrap;
 }
+
+/* ===== Länken “Gå till lokalavdelningen” ===== */
 
 .chapter-actions {
   margin-top: 0.35rem;
@@ -126,16 +183,17 @@ select:focus {
 .chapter-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.3rem;
   font-size: 0.9rem;
   text-decoration: none;
-  color: #0057b7;
-  font-weight: 500;
-}
-
-.chapter-link:hover,
-.chapter-link:focus {
-  text-decoration: underline;
+  color: #ffffff;
+  background-color: #cc0000; /* behåller denna */
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  border: 0;
+  transition: background-color 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
 }
 
 .chapter-link::after {
@@ -143,68 +201,98 @@ select:focus {
   font-size: 0.9em;
 }
 
-.empty-message {
+.chapter-link:hover,
+.chapter-link:focus {
+  background-color: #a30000;
+  transform: translateY(-1px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+/* ===== Tom-lista / felmeddelande ===== */
+
+.empty-message,
+.error-message {
   text-align: center;
-  padding: 1.5rem;
+  padding: 1.4rem 1.2rem;
   border-radius: 10px;
-  background-color: #ffffff;
-  border: 1px dashed #cccccc;
-  color: #777;
+  font-size: 0.95rem;
+}
+
+.empty-message {
+  background-color: #fafafa;
+  border: 1px dashed #d2d2d2;
+  color: #777777;
 }
 
 .error-message {
-  text-align: center;
-  padding: 1.5rem;
-  border-radius: 10px;
   background-color: #ffe5e5;
   border: 1px solid #ff9999;
-  color: #990000;
+  color: #8b0013;
 }
 
-/* Pagination */
+/* ===== Paginering ===== */
 
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .pagination button {
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.85rem;
   border-radius: 999px;
-  border: 1px solid #ccc;
-  background-color: #fff;
+  border: 1px solid #cc0000;
+  background-color: #ffffff;
   font-size: 0.9rem;
   cursor: pointer;
-  min-width: 2.25rem;
+  min-width: 2.4rem;
+  font-weight: 600;
+  color: #cc0000;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .pagination button:hover:not(:disabled) {
-  border-color: #0057b7;
+  background-color: #cc0000;
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  transform: translateY(-1px);
 }
 
 .pagination button:disabled {
   opacity: 0.5;
   cursor: default;
+  box-shadow: none;
 }
 
 .pagination .page-info {
   font-size: 0.9rem;
-  color: #555;
+  color: #555555;
 }
 
-/* Mindre skärmar */
+/* ===== Responsiv anpassning ===== */
 
-@media (max-width: 600px) {
-  .page-header h1 {
-    font-size: 1.5rem;
+@media (max-width: 720px) {
+  .chapters-container {
+    padding-inline: 1rem;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group--narrow,
+  .filter-group--wide {
+    flex: 1 1 auto;
   }
 
   .chapter-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0.2rem;
   }
 }
 
