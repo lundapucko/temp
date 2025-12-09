@@ -1,23 +1,27 @@
 // app.js
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10;
+const SHAREPOINT_EXCEL_URL = "lokalavdelningar.xlsx"
+
 
 let allChapters = [];
 let filteredChapters = [];
 let currentPage = 1;
 
 // DOM-element
-const searchInput = document.getElementById("searchInput");
+const searchMainInput = document.getElementById("searchMainInput");
+const searchLocationInput = document.getElementById("searchLocationInput");
 const districtFilter = document.getElementById("districtFilter");
 const chaptersList = document.getElementById("chaptersList");
 const pagination = document.getElementById("pagination");
 const resultsInfo = document.getElementById("resultsInfo");
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Läs Excel-filen från repo
-  loadChaptersFromExcel("lokalavdelningar.xlsx");
+  // Läs Excel-filen från repo (justera namn/sökväg vid behov)
+  loadChaptersFromExcel(SHAREPOINT_EXCEL_URL);
 
-  searchInput.addEventListener("input", handleFiltersChange);
+  searchMainInput.addEventListener("input", handleFiltersChange);
+  searchLocationInput.addEventListener("input", handleFiltersChange);
   districtFilter.addEventListener("change", handleFiltersChange);
 });
 
@@ -42,28 +46,48 @@ async function loadChaptersFromExcel(path) {
     rows.forEach((row, index) => {
       if (!row || row.length === 0) return;
 
-      const stift = (row[0] || "").toString().trim();       // Kolumn A
-      const namn = (row[1] || "").toString().trim();        // Kolumn B
-      const kortnamn = (row[2] || "").toString().trim();    // Kolumn C
-      const nummer = (row[3] || "").toString().trim();      // Kolumn D
-      const url = (row[4] || "").toString().trim();         // Kolumn E
+      const stift = (row[0] || "").toString().trim();        // A
+      const namn = (row[1] || "").toString().trim();         // B
+      const kortnamn = (row[2] || "").toString().trim();     // C
+      const nummer = (row[3] || "").toString().trim();       // D
+      const url = (row[4] || "").toString().trim();          // E
+      const forsamling = (row[5] || "").toString().trim();   // F
+      const postnummer = (row[6] || "").toString().trim();   // G
+      const ort = (row[7] || "").toString().trim();          // H
 
       // Hoppa ev. rubrikrad
       if (index === 0) {
-        const headerRow = [stift, namn, kortnamn, nummer, url]
-          .map((v) => v.toLowerCase());
+        const headerRow = [
+          stift,
+          namn,
+          kortnamn,
+          nummer,
+          url,
+          forsamling,
+          postnummer,
+          ort,
+        ].map((v) => v.toLowerCase());
+
         const looksLikeHeader =
           headerRow[0].includes("stift") ||
+          headerRow[0].includes("distrikt") ||
           headerRow[1].includes("namn") ||
           headerRow[2].includes("kort") ||
           headerRow[3].includes("nummer") ||
           headerRow[4].includes("länk") ||
-          headerRow[4].includes("url");
+          headerRow[4].includes("url") ||
+          headerRow[5].includes("församling") ||
+          headerRow[5].includes("pastorat") ||
+          headerRow[6].includes("postnr") ||
+          headerRow[6].includes("postnummer") ||
+          headerRow[7].includes("ort");
+
         if (looksLikeHeader) {
           return; // hoppa denna rad
         }
       }
 
+      // Skippa rader som helt saknar identitet
       if (!namn && !kortnamn && !nummer) return;
 
       chapters.push({
@@ -71,7 +95,10 @@ async function loadChaptersFromExcel(path) {
         kortnamn,
         nummer,
         distrikt: stift,
-        url
+        url,
+        forsamling,
+        postnummer,
+        ort,
       });
     });
 
@@ -92,38 +119,51 @@ async function loadChaptersFromExcel(path) {
   } catch (error) {
     console.error(error);
     chaptersList.innerHTML =
-      '<div class="error-message">Kunde inte läsa lokalavdelningarna från Excel-filen. Kontrollera att kolumnerna är: A stift, B namn, C kortnamn, D nummer, E länk.</div>';
+      '<div class="error-message">Kunde inte läsa lokalavdelningarna från Excel-filen. Kontrollera att kolumnerna är: A stift/distrikt, B namn, C kortnamn, D nummer, E länk, F församling/pastorat, G postnummer, H ort.</div>';
     resultsInfo.textContent = "Fel vid inläsning av lokalavdelningar.";
     pagination.innerHTML = "";
   }
 }
 
-// --- Filter (sök + stift) --- //
+// --- Filter (två sökfält + stiftfilter) --- //
 function handleFiltersChange() {
   if (!allChapters || allChapters.length === 0) {
     return;
   }
 
-  const query = searchInput.value.trim().toLowerCase();
+  const mainQuery = searchMainInput.value.trim().toLowerCase();
+  const locationQuery = searchLocationInput.value.trim().toLowerCase();
   const selectedDistrict = districtFilter.value;
 
   filteredChapters = allChapters.filter((chapter) => {
     const name = (chapter.namn || "").toLowerCase();
     const shortname = (chapter.kortnamn || "").toLowerCase();
     const number = String(chapter.nummer || "").toLowerCase();
+    const parish = (chapter.forsamling || "").toLowerCase();
+    const postcode = String(chapter.postnummer || "").toLowerCase();
+    const city = (chapter.ort || "").toLowerCase();
     const district = (chapter.distrikt || "").toLowerCase();
 
-    const matchesQuery =
-      query === "" ||
-      name.includes(query) ||
-      shortname.includes(query) ||
-      number.includes(query) ||
-      district.includes(query);
+    // Sökfält 1: namn, kortnamn, nummer, församling/pastorat
+    const matchesMain =
+      mainQuery === "" ||
+      name.includes(mainQuery) ||
+      shortname.includes(mainQuery) ||
+      number.includes(mainQuery) ||
+      parish.includes(mainQuery);
 
+    // Sökfält 2: ort, postnummer
+    const matchesLocation =
+      locationQuery === "" ||
+      postcode.includes(locationQuery) ||
+      city.includes(locationQuery);
+
+    // Stift enbart via filter (inte sök)
     const matchesDistrict =
       !selectedDistrict || chapter.distrikt === selectedDistrict;
 
-    return matchesQuery && matchesDistrict;
+    // Båda sökfält gäller samtidigt (AND)
+    return matchesMain && matchesLocation && matchesDistrict;
   });
 
   currentPage = 1;
@@ -154,6 +194,7 @@ function renderList() {
     const card = document.createElement("article");
     card.className = "chapter-card";
 
+    // --- Rubrik: bara namn ---
     const header = document.createElement("div");
     header.className = "chapter-header";
 
@@ -161,21 +202,11 @@ function renderList() {
     nameEl.className = "chapter-name";
     nameEl.textContent = chapter.namn || "(saknar namn)";
 
-    const shortnameEl = document.createElement("div");
-    shortnameEl.className = "chapter-shortname";
-    shortnameEl.textContent = chapter.kortnamn || "";
-
     header.appendChild(nameEl);
-    header.appendChild(shortnameEl);
 
+    // --- Metadata: stift, församling, postnummer/ort ---
     const meta = document.createElement("div");
     meta.className = "chapter-meta";
-
-    if (chapter.nummer) {
-      const numberSpan = document.createElement("span");
-      numberSpan.textContent = `Nr: ${chapter.nummer}`;
-      meta.appendChild(numberSpan);
-    }
 
     if (chapter.distrikt) {
       const districtSpan = document.createElement("span");
@@ -183,6 +214,23 @@ function renderList() {
       meta.appendChild(districtSpan);
     }
 
+    if (chapter.forsamling) {
+      const parishSpan = document.createElement("span");
+      parishSpan.textContent = chapter.forsamling;
+      meta.appendChild(parishSpan);
+    }
+
+    if (chapter.postnummer || chapter.ort) {
+      const locationSpan = document.createElement("span");
+      if (chapter.postnummer && chapter.ort) {
+        locationSpan.textContent = `${chapter.postnummer} ${chapter.ort}`;
+      } else {
+        locationSpan.textContent = chapter.postnummer || chapter.ort;
+      }
+      meta.appendChild(locationSpan);
+    }
+
+    // --- Länk ---
     const actions = document.createElement("div");
     actions.className = "chapter-actions";
 
@@ -201,6 +249,7 @@ function renderList() {
 
     actions.appendChild(link);
 
+    // --- Sätt ihop kortet ---
     card.appendChild(header);
     card.appendChild(meta);
     card.appendChild(actions);
@@ -266,3 +315,4 @@ function renderInfo() {
 
   resultsInfo.textContent = `Visar ${startIndex}–${endIndex} av ${totalItems} lokalavdelningar`;
 }
+
