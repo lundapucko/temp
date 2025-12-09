@@ -4,46 +4,77 @@
   <meta charset="UTF-8" />
   <title>Lokalavdelningar – Svenska Kyrkans Unga</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Typsnitt enligt grafisk profil -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <main class="container">
+  <main class="chapters-container">
     <header class="page-header">
-      <h1>Hitta lokalavdelning</h1>
-      <p>Sök eller filtrera bland alla lokalavdelningar.</p>
+      <p class="page-eyebrow">Svenska Kyrkans Unga</p>
+      <h1 class="page-title">Hitta lokalavdelning</h1>
+      <p class="page-intro">
+        Sök bland alla lokalavdelningar eller filtrera på stift. Du kan söka på
+        lokalavdelningens namn, kortnamn, nummer, församling/pastorat, ort eller postnummer.
+      </p>
     </header>
 
-    <section class="controls" aria-label="Sök och filter">
-      <!-- SÖK -->
-      <div class="control-group">
-        <label for="searchInput">Sök på namn, stift eller nummer</label>
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Börja skriva t.ex. 'Lund', 'Göteborgs stift' eller '123'..."
-        />
+    <section class="filter-panel" aria-label="Sök och filter">
+      <div class="filters">
+        <!-- Sök: namn / kortnamn / nummer / församling -->
+        <div class="filter-group filter-group--wide">
+          <label for="searchMainInput">
+            Sök lokalavdelning, kortnamn, nummer eller församling/pastorat
+          </label>
+          <input
+            type="text"
+            id="searchMainInput"
+            placeholder="T.ex. ”Exempelby”, ”Exby”, ”123” eller ”Domkyrkoförsamlingen”"
+          />
+        </div>
+
+        <!-- Sök: ort / postnummer -->
+        <div class="filter-group filter-group--wide">
+          <label for="searchLocationInput">
+            Sök på ort eller postnummer
+          </label>
+          <input
+            type="text"
+            id="searchLocationInput"
+            placeholder="T.ex. ”Uppsala” eller ”75320”"
+          />
+        </div>
+
+        <!-- FILTER STIFT -->
+        <div class="filter-group filter-group--narrow">
+          <label for="districtFilter">Filtrera på stift</label>
+          <select id="districtFilter">
+            <option value="">Alla stift</option>
+            <option value="Uppsala stift">Uppsala stift</option>
+            <option value="Linköpings stift">Linköpings stift</option>
+            <option value="Skara stift">Skara stift</option>
+            <option value="Strängnäs stift">Strängnäs stift</option>
+            <option value="Västerås stift">Västerås stift</option>
+            <option value="Växjö stift">Växjö stift</option>
+            <option value="Lunds stift">Lunds stift</option>
+            <option value="Göteborgs stift">Göteborgs stift</option>
+            <option value="Karlstads stift">Karlstads stift</option>
+            <option value="Härnösands stift">Härnösands stift</option>
+            <option value="Luleå stift">Luleå stift</option>
+            <option value="Visby stift">Visby stift</option>
+            <option value="Stockholms stift">Stockholms stift</option>
+          </select>
+        </div>
       </div>
 
-      <!-- FILTER STIFT -->
-      <div class="control-group">
-        <label for="districtFilter">Filtrera på stift</label>
-        <select id="districtFilter">
-          <option value="">Alla stift</option>
-          <option value="Uppsala stift">Uppsala stift</option>
-          <option value="Linköpings stift">Linköpings stift</option>
-          <option value="Skara stift">Skara stift</option>
-          <option value="Strängnäs stift">Strängnäs stift</option>
-          <option value="Västerås stift">Västerås stift</option>
-          <option value="Växjö stift">Växjö stift</option>
-          <option value="Lunds stift">Lunds stift</option>
-          <option value="Göteborgs stift">Göteborgs stift</option>
-          <option value="Karlstads stift">Karlstads stift</option>
-          <option value="Härnösands stift">Härnösands stift</option>
-          <option value="Luleå stift">Luleå stift</option>
-          <option value="Visby stift">Visby stift</option>
-          <option value="Stockholms stift">Stockholms stift</option>
-        </select>
-      </div>
+      <p class="filter-helptext">
+        Övre sökrutan söker i namn, kortnamn, nummer och församling/pastorat.
+        Nedre sökrutan söker i ort och postnummer. Stift väljer du i rullistan.
+      </p>
     </section>
 
     <section class="status-bar">
@@ -57,7 +88,7 @@
       aria-label="Lista över lokalavdelningar"
     >
       <div class="empty-message">
-        Lokalavdelningarna laddas in från Excel-filen.
+        Lokalavdelningarna laddas in från registret.
       </div>
     </section>
 
@@ -70,11 +101,8 @@
     </nav>
   </main>
 
-  <!-- Bibliotek för att läsa Excel-filer -->
+  <!-- Bibliotek för att läsa Excel/Sheets -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
-
-
-
