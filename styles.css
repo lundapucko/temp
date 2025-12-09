@@ -4,7 +4,7 @@
 .chapters-container {
   max-width: 1040px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
+  padding: 0 1.25rem 3rem;
   font-family: "PT Sans", "Open Sans", system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #222222;
@@ -286,5 +286,6 @@
     gap: 0.2rem;
   }
 }
+
 
 
