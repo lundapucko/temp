@@ -4,7 +4,7 @@ const PAGE_SIZE = 5;
 
 // Google Sheets → export som xlsx (den här kom vi fram till tidigare)
 const GOOGLE_SHEETS_XLSX_URL =
-  "lokalavdelningar.xlsx";
+  "https://docs.google.com/spreadsheets/d/1agRPuy9kIeM2kGPzJm7QnL3Uf4GJAwRV/export?format=xlsx&gid=843310089";
 
 let allChapters = [];
 let filteredChapters = [];
@@ -413,5 +413,6 @@ function renderInfo() {
 
   resultsInfo.textContent = `Visar ${startIndex}–${endIndex} av ${totalItems} lokalavdelningar`;
 }
+
 
 
