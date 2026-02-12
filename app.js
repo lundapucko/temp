@@ -60,38 +60,6 @@ async function loadChaptersFromExcel(path) {
       const postnummer = (row[6] || "").toString().trim();   // G
       const ort = (row[7] || "").toString().trim();          // H
 
-      // Hoppa ev. rubrikrad
-      if (index === 0) {
-        const headerRow = [
-          stift,
-          namn,
-          kortnamn,
-          nummer,
-          url,
-          forsamling,
-          postnummer,
-          ort,
-        ].map((v) => v.toLowerCase());
-
-        const looksLikeHeader =
-          headerRow[0].includes("stift") ||
-          headerRow[0].includes("distrikt") ||
-          headerRow[1].includes("namn") ||
-          headerRow[2].includes("kort") ||
-          headerRow[3].includes("nummer") ||
-          headerRow[4].includes("länk") ||
-          headerRow[4].includes("url") ||
-          headerRow[5].includes("församling") ||
-          headerRow[5].includes("pastorat") ||
-          headerRow[6].includes("postnr") ||
-          headerRow[6].includes("postnummer") ||
-          headerRow[7].includes("ort");
-
-        if (looksLikeHeader) {
-          return; // hoppa denna rad
-        }
-      }
-
       // Skippa rader som helt saknar identitet
       if (!namn && !kortnamn && !nummer) return;
 
@@ -413,6 +381,7 @@ function renderInfo() {
 
   resultsInfo.textContent = `Visar ${startIndex}–${endIndex} av ${totalItems} lokalavdelningar`;
 }
+
 
 
 
